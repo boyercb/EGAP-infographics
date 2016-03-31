@@ -1,6 +1,7 @@
 import glob
 import numpy
 import pandas
+import textwrap
 import matplotlib.style as sty
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw, ImageFont
@@ -11,77 +12,87 @@ def resize(file, size):
     Resizes image file to size.
     """
     img = Image.open(file)
+    fname, ext = os.path.splitext(file)
     resized = img.resize(size)
-    return resized
-
-def create_text_img(text, fontfamily, fontsize, fontfill, size, fill):
-    img = Image.new('RGBA', size, fill)
-    font = ImageFont.truetype(fontfamily, fontsize, fontfill)
-    d = ImageDraw.Draw(img)
-    d.text(size, text, font)
-    return img
+    resized.save(fname + "_resized.png")
 
 def create_bar_plot(df):
     """
     Creates a green/red bar plot from data.
     """
     colors = ['g', 'r']
+    hfont = {'fontname' : 'Roboto-Bold'}
     names = df.values
-    bars = df.plot(kind = "barh", color = colors)
-    for i, bar in enumerate(bars):
-        height = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width()/2.0, 0.90 * height,
-            's'% (names[i]), ha = 'center', va = 'bottom')
+    ax = df.plot.barh(color = colors)
     plt.axis('off')
-    plt.canvas.draw()
-    pillow = Image.frombyte('RGBA', plt.canvas.get_width_height(),
-        plt.canvas.tostring_rgba())
+    for i, bar in enumerate(ax.patches):
+        ax.annotate(str(bar.get_width()),
+            (bar.get_width() - 5, bar.get_y() + bar.get_height()/2.0),
+            ha = 'center', va = 'center', fontsize = 40, **hfont, color = 'w')
+    canvas = plt.get_current_fig_manager().canvas
+    plt.close()
+    canvas.draw()
+    pillow = Image.frombytes('RGB', canvas.get_width_height(),
+        canvas.tostring_rgb())
     return pillow
 
-def create_bar_figure(plot, img):
+def create_bar_figure(plot, img1, img2):
     """
     Merges bar plot with image for percentage variables.
     """
-    canvas = Image.new('RGBA', (400, 800))
-    out = Image.alpha_composite(canvas, img, plot)
+    out = Image.new('RGB', (3000, 1500))
+    rplot = plot.resize((1800, 1500))
+    rimg1 = img1.resize((1200, 750))
+    rimg2 = img2.resize((1200, 750))
+    out.paste(rimg1, (0,0))
+    out.paste(rimg2, (0, 750))
+    out.paste(rplot, (1200, 0))
     return out
+
+def create_text_img(text, fontfamily, fontsize, fontfill, size):
+    img = Image.new('RGB', size, (255, 255, 255))
+    font = ImageFont.truetype(fontfamily, fontsize)
+    d = ImageDraw.Draw(img)
+    offset = 0
+    for line in textwrap.wrap(text, width = 115):
+        d.text((0, offset), line, font = font, fill = fontfill)
+        offset += font.getsize(line)[1]
+    return img
 
 def create_numbered_figure(delay, img):
     """
     Creates an image with numbered text colored by whether it's positive/negative.
     """
-    canvas = Image.new('RGBA', (400, 800))
-    msg = delay + "jours d'avances" if delay <= 0 else "jours de retard"
-    fill = (x, x, x, x) if delay <= 0 else (x, x, x, x)
-    img = create_text_img(msg, "Roboto-Bold_0.tff", 48, fill, )
-    out = Image.alpha_composite(canvas, img, txt)
+    out = Image.new('RGB', (3000, 1500))
+    rimg = img.resize((2000, 1500))
+    msg = str(delay) + (" jours d'avances" if delay <= 0 else " jours de retard")
+    fill = (0, 127, 0) if delay <= 0 else (255, 0, 0)
+    txt = create_text_img(msg, "Roboto-Bold_0.ttf", 120, fill, (1000, 1500))
+    out.paste(rimg, (0, 0))
+    out.paste(txt, (2000, 0))
     return out
 
-def create_summary_figure(img):
-    """
-    Creates the summary image colored by whether it's positive/negative.
-    """
-    canvas = (400, 800)
-
-def create_infographic(commune, title, top, mid, bot, grob):
+def create_infographic(commune, title, top, mid, bot, fig):
     """
     Constructs the final infographic image from components.
     """
-    canvas = (4096, 1086)
-    commune_grob = create_text_img(commune, "Roboto-Bold_0.tff")
-    title_grob = create_text_img(title, "Roboto-Bold_0.tff")
-    top_grob = create_text_img(top, "Roboto-Regular.tff")
-    mid_grob = create_text_img(mid, "Roboto-Regular.tff")
-    bot_grob = create_text_img(bot, "Roboto-Regular.tff")
+    fill = (0, 0, 0, 0)
+    infog = Image.new('RGB', (4800, 3000), (255,255,255))
 
-    stage1 = Image.alpha_composite(commune_grob, title_grob)
-    stage2 = Image.alpha_composite(stage1, top_grob)
-    stage3 = Image.alpha_composite(stage2, mid_grob)
-    stage4 = Image.alpha_composite(stage3, bot_grob)
-    infog = Image.alpha_composite(stage4, grob)
+    grob1 = create_text_img(commune, "Roboto-Bold_0.ttf", 200, fill, (4800, 300))
+    grob2 = create_text_img(title, "Roboto-Bold_0.ttf", 150, fill, (4800, 300))
+    grob3 = create_text_img(top, "Roboto-Regular.ttf", 90, fill, (4800, 250))
+    grob4 = create_text_img(mid, "Roboto-Regular.ttf", 90, fill, (4800, 250))
+    grob5 = create_text_img(bot, "Roboto-Regular.ttf", 90, fill, (4800, 250))
 
+    infog.paste(grob1, (0, 10))
+    infog.paste(grob2, (0, 320))
+    infog.paste(grob3, (0, 630))
+    infog.paste(grob4, (0, 940))
+    infog.paste(grob5, (0, 1250))
+    infog.paste(fig, (900, 1500))
+    #
     return infog
-
 
 # read data
 data = pandas.read_csv('../indicators.csv')
@@ -90,63 +101,55 @@ text = pandas.read_csv('../text.csv')
 # set matplotlib plot style
 sty.use('ggplot')
 
-# clean and organize indicators
-
-size = (600, 400)
-altsize = (1000, 800)
-
-altnames = [ "summary_presence",
-             "summary_absence",
-             "school_supply2_presence",
-             "school_supply2_absence" ]
-
-# read and trim image files
-for file in glob.glob('../png/*.png'):
-    fname, ext = os.path.splitext(file)
-    resized = resize(file, size if file in altnames else altsize)
-    resized.save(fname + "_resized.png")
-
 for ind in text["indicator"]:
     for idx, row in data.iterrows():
         exclude = ["summary_municipality", "school_supplies_delay_municipality"]
+        root = ind.replace("_municipality", "")
 
         # infographic logic
         if ind in exclude:
             if ind == exclude[1]:
-                delay = row[ind]
-                fname = ind + '_presence.png' if delay <= 0 else '_absence.png'
-                img = Image.open('../png' + fname)
+                v = row[ind]
+                fname = root + ('_presence.png' if delay <= 0 else '_absence.png')
+                img = Image.open('../png/' + fname)
                 grob = create_numbered_figure(delay, img)
 
             elif ind == exclude[2]:
                 rank = row[ind.replace("_municipality", "_performance")]
-                fname = ind + '_presence.png' if rank == "PLUS" else '_absence.png'
-                img = Image.open('../png' + fname)
-                grob = create_summary_figure(rank, img)
+                fname = root + ('_presence.png' if rank == "PLUS" else '_absence.png')
+                img = Image.open('../png/' + fname)
+                grob = img.resize(2400, 1500)
 
             else:
                 EnvironmentError
 
         else:
             row[ind + "_neg"] = 100 - row[ind]
-            plot = create_bar_plot(row[ind, ind + "_neg"])
-            img = Image.open('../png/' + ind + ".png")
-            grob = create_bar_figure(plot, img)
+            v = row[ind]
+            plot = create_bar_plot(row[[ind, ind + "_neg"]])
+            imga = Image.open('../png/' + root + "_absence.png")
+            imgp = Image.open('../png/' + root + "_presence.png")
+            grob = create_bar_figure(plot, imga, imgp)
 
         # fetch infographic text
-        title = text[ind, "title"]
-        top = text[ind, "title"]
-        mid = text[ind, "mid"]
-        bot = text[ind, "bot"]
+        top = text[text["indicator"] == ind]["top"].values[0]
+        mid = text[text["indicator"] == ind]["middle"].values[0]
+        bot = text[text["indicator"] == ind]["bottom"].values[0]
+        title = text[text["indicator"] == ind]["title"].values[0]
+        commune = row["commune"]
+        region = row["region"]
+
+        Y = row[root + "_ranking_below"]
+        X = row["number_of_municipalities_in_region"]
 
         # replace place holders with values in infographic text
-        mid = mid.replace("[v]", row[ind])
-        mid = mid.replace("[commune name]", row[ind])
-        bot = bot.replace("[X]", row[ind])
-        bot = bot.replace("[Y]", row[ind])
+        mid = mid.replace("[v]", str(v))
+        mid = mid.replace("[commune name]", commune)
+        bot = bot.replace("[X]", str(X))
+        bot = bot.replace("[Y]", str(Y))
 
         # construct the infographic from its components
-        infog = create_infographic(title, top, mid, bot, grob)
+        infog = create_infographic(commune, title, top, mid, bot, grob)
 
         # export
-        infog.save()
+        infog.save("../output/" + region + "_" + commune + "_" + root + ".png", "PNG")
