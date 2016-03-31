@@ -110,7 +110,7 @@ for ind in text["indicator"]:
         if ind in exclude:
             if ind == exclude[1]:
                 v = row[ind]
-                fname = root + ('_presence.png' if delay <= 0 else '_absence.png')
+                fname = root + ('_presence.png' if v <= 0 else '_absence.png')
                 img = Image.open('../png/' + fname)
                 grob = create_numbered_figure(delay, img)
 
