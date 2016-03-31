@@ -21,14 +21,14 @@ def create_bar_plot(df):
     Creates a green/red bar plot from data.
     """
     colors = ['g', 'r']
-    hfont = {'fontname' : 'Roboto-Bold'}
+    hfont = {'fontname' : 'Roboto Bold'}
     names = df.values
     ax = df.plot.barh(color = colors)
     plt.axis('off')
     for i, bar in enumerate(ax.patches):
         ax.annotate(str(bar.get_width()),
             (bar.get_width() - 5, bar.get_y() + bar.get_height()/2.0),
-            ha = 'center', va = 'center', fontsize = 40, **hfont, color = 'w')
+            ha = 'center', va = 'center', fontsize = 40, fontname = "Roboto", color = 'w')
     canvas = plt.get_current_fig_manager().canvas
     plt.close()
     canvas.draw()
