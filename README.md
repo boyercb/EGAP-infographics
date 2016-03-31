@@ -9,5 +9,5 @@ A repository for code to automate the creation of infographic slides for EGAP Bu
  - [x] 4. create plots of indicator data.
  - [x] 5. create image grobs for bar, number, and summary infographic slides.
  - [x] 6. loop through indicators and apply infographic logic to combine grobs and text.
- - [ ] 7. export final slides.
+ - [x] 7. export final slides.
  - [ ] 8. unit test and debug.
