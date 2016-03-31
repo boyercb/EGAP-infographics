@@ -112,7 +112,7 @@ for ind in text["indicator"]:
                 v = row[ind]
                 fname = root + ('_presence.png' if v <= 0 else '_absence.png')
                 img = Image.open('../png/' + fname)
-                grob = create_numbered_figure(delay, img)
+                grob = create_numbered_figure(v, img)
 
             elif ind == exclude[2]:
                 rank = row[ind.replace("_municipality", "_performance")]
