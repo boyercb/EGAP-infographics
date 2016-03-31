@@ -101,7 +101,7 @@ text = pandas.read_csv('../text.csv')
 # set matplotlib plot style
 sty.use('ggplot')
 
-for ind in text["indicator"]:
+for ind in text["indicators"]:
     for idx, row in data.iterrows():
         exclude = ["summary_municipality", "school_supplies_delay_municipality"]
         root = ind.replace("_municipality", "")
@@ -109,23 +109,21 @@ for ind in text["indicator"]:
         # infographic logic
         if ind in exclude:
             if ind == exclude[1]:
-                v = row[ind]
                 fname = root + ('_presence.png' if v <= 0 else '_absence.png')
                 img = Image.open('../png/' + fname)
                 grob = create_numbered_figure(v, img)
 
-            elif ind == exclude[2]:
+            elif ind == exclude[0]:
                 rank = row[ind.replace("_municipality", "_performance")]
                 fname = root + ('_presence.png' if rank == "PLUS" else '_absence.png')
                 img = Image.open('../png/' + fname)
-                grob = img.resize(2400, 1500)
+                grob = img.resize((2400, 1500))
 
             else:
                 EnvironmentError
 
         else:
             row[ind + "_neg"] = 100 - row[ind]
-            v = row[ind]
             plot = create_bar_plot(row[[ind, ind + "_neg"]])
             imga = Image.open('../png/' + root + "_absence.png")
             imgp = Image.open('../png/' + root + "_presence.png")
@@ -139,6 +137,8 @@ for ind in text["indicator"]:
         commune = row["commune"]
         region = row["region"]
 
+        # substitution values
+        v = row[ind]
         Y = row[root + "_ranking_below"]
         X = row["number_of_municipalities_in_region"]
 
