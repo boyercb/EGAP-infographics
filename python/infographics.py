@@ -5,6 +5,7 @@ import textwrap
 import matplotlib.style as sty
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw, ImageFont
+from progressbar import ProgressBar
 
 # function definitions
 def resize(file, size):
@@ -112,9 +113,13 @@ text = pandas.read_csv('../text.csv')
 # set matplotlib plot style
 sty.use('ggplot')
 
+# initialize progress bar
+pbar = ProgressBar(max_value = len(data.index))
 exclude = ["summary_municipality", "school_supplies_delay_municipality"]
 
 for ind in text["indicator"]:
+    print("\n" + ind + ":\n")
+    pbar.start()
     for idx, row in data.iterrows():
         # get indicator root
         root = ind.replace("_municipality", "")
@@ -176,3 +181,6 @@ for ind in text["indicator"]:
 
         # export
         infog.save("../output/" + region + "_" + commune + "_" + root + ".png", "PNG")
+
+        pbar.update(idx + 1)
+    pbar.finish()
