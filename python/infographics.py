@@ -22,14 +22,23 @@ def create_bar_plot(df):
     """
     colors = ['g', 'r']
     hfont = {'fontname' : 'Roboto Bold'}
+
+    df[df >= 99.5] = 99.5
+    df[df <= 0.5] = 0.5
+
     names = df.values
+    names = [100 if x == 99.5 else x for x in names]
+
     ax = df.plot.barh(color = colors)
     ax.invert_yaxis()
+    ax.set_xlim(0, 100)
     plt.axis('off')
+
     for i, bar in enumerate(ax.patches):
-        ax.annotate(str(bar.get_width()),
-            (bar.get_width() - 5, bar.get_y() + bar.get_height()/2.0),
+        ax.annotate(str(names[i]),
+            (bar.get_width() - 7, bar.get_y() + bar.get_height()/2.0),
             ha = 'center', va = 'center', fontsize = 40, fontname = "Roboto", color = 'w')
+
     canvas = plt.get_current_fig_manager().canvas
     plt.close()
     canvas.draw()
@@ -146,11 +155,14 @@ for ind in text["indicator"]:
         commune = row["commune"]
         region = row["region"]
 
+
         # replace text placeholders
         # the first case is a special update for the school supplies indicator
         if v <= 0 and ind == exclude[1]:
             mid = mid.replace("avec [v] jours de retard après la rentrée.",
                 "à temps pour la rentrée scolaire.")
+        elif v >= 100 and ind not in exclude:
+            mid = mid.replace("[v]", "près de 100")
         else:
             mid = mid.replace("[v]", str(v))
 
