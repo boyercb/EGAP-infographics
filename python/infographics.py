@@ -24,6 +24,7 @@ def create_bar_plot(df):
     hfont = {'fontname' : 'Roboto Bold'}
     names = df.values
     ax = df.plot.barh(color = colors)
+    ax.invert_yaxis()
     plt.axis('off')
     for i, bar in enumerate(ax.patches):
         ax.annotate(str(bar.get_width()),
@@ -127,7 +128,7 @@ for ind in text["indicator"]:
             plot = create_bar_plot(row[[ind, ind + "_neg"]])
             imga = Image.open('../png/' + root + "_absence.png")
             imgp = Image.open('../png/' + root + "_presence.png")
-            grob = create_bar_figure(plot, imga, imgp)
+            grob = create_bar_figure(plot, imgp, imga)
 
         # fetch infographic text
         top = text[text["indicator"] == ind]["top"].values[0]
