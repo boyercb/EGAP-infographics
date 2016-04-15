@@ -64,12 +64,12 @@ def create_numbered_figure(delay, img):
     """
     Creates an image with numbered text colored by whether it's positive/negative.
     """
-    out = Image.new('RGB', (3000, 1500))
+    out = Image.new('RGB', (3500, 1500))
     rimg = img.resize((2000, 1500))
     msg = ("0" if delay <= 0 else str(delay)) + " jours de retard"
-    msg = "  " + msg
+    msg = " " + msg
     fill = (0, 127, 0) if delay <= 0 else (255, 0, 0)
-    txt = create_text_img(msg, "Roboto-Bold_0.ttf", 120, fill, (100, 1500))
+    txt = create_text_img(msg, "Roboto-Bold_0.ttf", 120, fill, (1500, 1500))
     out.paste(rimg, (0, 0))
     out.paste(txt, (2000, 0))
     return out
@@ -103,10 +103,17 @@ text = pandas.read_csv('../text.csv')
 # set matplotlib plot style
 sty.use('ggplot')
 
+exclude = ["summary_municipality", "school_supplies_delay_municipality"]
+
 for ind in text["indicator"]:
     for idx, row in data.iterrows():
-        exclude = ["summary_municipality", "school_supplies_delay_municipality"]
+        # get indicator root
         root = ind.replace("_municipality", "")
+
+        # substitution values
+        v = row[ind]
+        Y = row[root + "_ranking_below"]
+        X = row["number_of_municipalities_in_region"]
 
         # infographic logic
         if ind in exclude:
@@ -139,15 +146,11 @@ for ind in text["indicator"]:
         commune = row["commune"]
         region = row["region"]
 
-        # substitution values
-        v = row[ind]
-        Y = row[root + "_ranking_below"]
-        X = row["number_of_municipalities_in_region"]
-
         # replace text placeholders
         # the first case is a special update for the school supplies indicator
         if v <= 0 and ind == exclude[1]:
-            mid = mid.replace("avec [v] jours de retard après la rentrée.", "à temps pour la rentrée scolaire.")
+            mid = mid.replace("avec [v] jours de retard après la rentrée.",
+                "à temps pour la rentrée scolaire.")
         else:
             mid = mid.replace("[v]", str(v))
 
