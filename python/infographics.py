@@ -66,9 +66,10 @@ def create_numbered_figure(delay, img):
     """
     out = Image.new('RGB', (3000, 1500))
     rimg = img.resize((2000, 1500))
-    msg = str(delay) + (" jours d'avances" if delay <= 0 else " jours de retard")
+    msg = ("0" if delay <= 0 else str(delay)) + " jours de retard"
+    msg = "  " + msg
     fill = (0, 127, 0) if delay <= 0 else (255, 0, 0)
-    txt = create_text_img(msg, "Roboto-Bold_0.ttf", 120, fill, (1000, 1500))
+    txt = create_text_img(msg, "Roboto-Bold_0.ttf", 120, fill, (100, 1500))
     out.paste(rimg, (0, 0))
     out.paste(txt, (2000, 0))
     return out
@@ -143,8 +144,14 @@ for ind in text["indicator"]:
         Y = row[root + "_ranking_below"]
         X = row["number_of_municipalities_in_region"]
 
-        # replace place holders with values in infographic text
-        mid = mid.replace("[v]", str(v))
+        # replace text placeholders
+        # the first case is a special update for the school supplies indicator
+        if v <= 0 and ind == exclude[1]:
+            mid = mid.replace("avec [v] jours de retard après la rentrée.", "à temps pour la rentrée scolaire.")
+        else:
+            mid = mid.replace("[v]", str(v))
+
+        # replace remaining place holders with values in infographic text
         mid = mid.replace("[commune name]", commune)
         bot = bot.replace("[X]", str(X))
         bot = bot.replace("[Y]", str(Y))
