@@ -101,7 +101,7 @@ text = pandas.read_csv('../text.csv')
 # set matplotlib plot style
 sty.use('ggplot')
 
-for ind in text["indicators"]:
+for ind in text["indicator"]:
     for idx, row in data.iterrows():
         exclude = ["summary_municipality", "school_supplies_delay_municipality"]
         root = ind.replace("_municipality", "")
